@@ -6,4 +6,5 @@ export default defineConfig({
     { path: "/lucky-subway", component: "luckySubway", layout: 'index' },
   ],
   npmClient: 'pnpm',
+  publicPath: './'
 });
