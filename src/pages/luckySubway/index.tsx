@@ -151,8 +151,9 @@ export default function LuckySubway() {
                 lineDisabled
                   ? undefined
                   : (v) => {
-                      setLineIndex(v[0]);
-                      const slName = subwayLines[v[0]];
+                      const index = v[0] ?? lineIndex;
+                      setLineIndex(index);
+                      const slName = subwayLines[index];
                       setSubwayLineName(slName);
                       setStep(SwStateStep.step2);
                     }
@@ -183,12 +184,22 @@ export default function LuckySubway() {
             />
           )}
         </div>
-        {(step !== SwStateStep.step1 || lineDisabled) && (
-          <Button block fill="outline" loading={stepLoading} color="primary" shape="rounded" onClick={nextStep}>
+      </Card>
+      {(step !== SwStateStep.step1 || lineDisabled) && (
+        <div className={styles['floating-button']}>
+          <Button
+            block
+            fill="outline"
+            loading={stepLoading}
+            color="primary"
+            shape="rounded"
+            onClick={nextStep}
+            style={{ '--background-color': 'rgba(255, 255, 255, 0.8)' }}
+          >
             {nextTitle}
           </Button>
-        )}
-      </Card>
+        </div>
+      )}
     </>
   );
 }
