@@ -26,8 +26,8 @@ export default function LuckySubway() {
     setStepLoading(true);
     let index = 0;
     let indexRef = 0;
-    const maxTimes = 30;
     const length = 14;
+    const maxTimes = length * 3;
     animationTimeout.current = setInterval(() => {
       index++;
       if (index === maxTimes) {
@@ -59,8 +59,8 @@ export default function LuckySubway() {
     setStepLoading(true);
     let index = 0;
     let indexRef = 0;
-    const maxTimes = 40;
     const length = subwaySites?.length;
+    const maxTimes = length * 3;
     animationTimeout.current = setInterval(() => {
       index++;
       if (index === maxTimes) {
