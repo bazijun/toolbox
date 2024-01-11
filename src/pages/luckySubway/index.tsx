@@ -1,4 +1,4 @@
-import { Button, Card, Result, Selector, Toast } from 'antd-mobile';
+import { Button, Card, Divider, Result, Selector, Switch, Toast } from 'antd-mobile';
 import { HeartFill, LeftOutline } from 'antd-mobile-icons';
 import { SubWayData } from '@/store/subwayData';
 import styles from './index.less';
@@ -10,9 +10,10 @@ export default function LuckySubway() {
   const [step, setStep] = useState(SwStateStep.step1);
   const animationTimeout = useRef<NodeJS.Timeout>();
   const [stepLoading, setStepLoading] = useState(false);
+  const [lineDisabled, setLineDisabled] = useState(true); // 是否随机线路
 
   // 地铁线路
-  const [lineIndex, setLineIndex] = useState<number>(0);
+  const [lineIndex, setLineIndex] = useState<number>();
   const [subwayLineName, setSubwayLineName] = useState('');
   const subwayLinesOptions = subwayLines.map((m, i) => ({ label: m, value: i, disabled: false }));
   // 地铁站点
@@ -27,26 +28,17 @@ export default function LuckySubway() {
     let index = 0;
     let indexRef = 0;
     const length = 14;
-    const maxTimes = length * 3;
+    const maxTimes = length * 2;
     animationTimeout.current = setInterval(() => {
       index++;
       if (index === maxTimes) {
         clearInterval(animationTimeout.current);
-        setStepLoading(false);
         setTimeout(() => {
           const slName = subwayLines[indexRef];
           setSubwayLineName(slName);
           setStep(SwStateStep.step2);
-        }, 500);
-        // Dialog.confirm({
-        //   title: <SmileOutline color="var(--adm-color-primary)" />,
-        //   confirmText: '选择站台',
-        //   content: <div>{slName}</div>,
-        //   onConfirm: () => {
-        //     setSubwayLineName(slName);
-        //     setStep(SwStateStep.step2);
-        //   },
-        // });
+          setStepLoading(false);
+        }, 350);
         return;
       }
       indexRef = Math.floor(Math.random() * length);
@@ -60,17 +52,17 @@ export default function LuckySubway() {
     let index = 0;
     let indexRef = 0;
     const length = subwaySites?.length;
-    const maxTimes = length * 3;
+    const maxTimes = 78;
     animationTimeout.current = setInterval(() => {
       index++;
       if (index === maxTimes) {
         clearInterval(animationTimeout.current);
-        setStepLoading(false);
         setTimeout(() => {
           const slName = subwaySites?.[indexRef];
           setSubwaySiteName(slName);
           setStep(SwStateStep.Step3);
-        }, 500);
+          setStepLoading(false);
+        }, 350);
         return;
       }
       indexRef = Math.floor(Math.random() * length);
@@ -87,19 +79,35 @@ export default function LuckySubway() {
     }
   };
 
+  const stepPush = (step: SwStateStep) => {
+    !stepLoading && setStep(step);
+  };
+
   const StepSchema = (): StepSchemaRes => {
     switch (step) {
       case SwStateStep.step1:
         return {
           nextStep: getLuckyLine,
-          navTitle: '幸运地铁',
+          navTitle: (
+            <div>
+              幸运地铁
+              <Switch
+                checked={lineDisabled}
+                onChange={(bl) => setLineDisabled(bl)}
+                defaultChecked
+                uncheckedText="自选"
+                checkedText="随机"
+                style={{ '--height': '25px', '--width': '42px', marginLeft: '8px' }}
+              />
+            </div>
+          ),
           nextTitle: '获取幸运线路',
         };
       case SwStateStep.step2:
         return {
           nextStep: getLuckySite,
           navTitle: (
-            <a color="primary" onClick={() => setStep(SwStateStep.step1)}>
+            <a color="primary" onClick={() => stepPush(SwStateStep.step1)}>
               <LeftOutline /> {subwayLineName}
             </a>
           ),
@@ -109,7 +117,7 @@ export default function LuckySubway() {
         return {
           nextStep: copySite,
           navTitle: (
-            <a color="primary" onClick={() => setStep(SwStateStep.step2)}>
+            <a color="primary" onClick={() => stepPush(SwStateStep.step2)}>
               <LeftOutline /> {subwaySiteName}
             </a>
           ),
@@ -126,11 +134,12 @@ export default function LuckySubway() {
 
   return (
     <>
-      <Card title={navTitle}>
+      <Card headerStyle={{ border: 'none' }} title={<div className={styles['nav-title']}>{navTitle}</div>}>
+        <Divider />
         <div className={styles['lucy-box']}>
           {step === SwStateStep.step1 && (
             <Selector
-              value={[lineIndex]}
+              value={[lineIndex as number]}
               style={{
                 '--border-radius': '100px',
                 '--border': 'solid transparent 1px',
@@ -138,6 +147,16 @@ export default function LuckySubway() {
                 '--checked-border': 'solid var(--adm-color-primary) 1px',
                 '--padding': '8px 24px',
               }}
+              onChange={
+                lineDisabled
+                  ? undefined
+                  : (v) => {
+                      setLineIndex(v[0]);
+                      const slName = subwayLines[v[0]];
+                      setSubwayLineName(slName);
+                      setStep(SwStateStep.step2);
+                    }
+              }
               options={subwayLinesOptions}
               showCheckMark={false}
             />
@@ -164,9 +183,11 @@ export default function LuckySubway() {
             />
           )}
         </div>
-        <Button block fill="outline" loading={stepLoading} color="primary" shape="rounded" onClick={nextStep}>
-          {nextTitle}
-        </Button>
+        {(step !== SwStateStep.step1 || lineDisabled) && (
+          <Button block fill="outline" loading={stepLoading} color="primary" shape="rounded" onClick={nextStep}>
+            {nextTitle}
+          </Button>
+        )}
       </Card>
     </>
   );
